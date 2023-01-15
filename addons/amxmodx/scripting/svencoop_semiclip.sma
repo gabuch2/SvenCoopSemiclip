@@ -4,16 +4,24 @@
 #include <fakemeta>
 
 #define PLUGIN_NAME             "Sven Co-op Semiclip"
-#define PLUGIN_VERSION          "1.2"
+#define PLUGIN_VERSION          "1.2.1"
 #define PLUGIN_AUTHOR           "gabuch2"
 
 #define CALLIBRATION            2 //do not change this unless you know what are you doing
+
+#if AMXX_VERSION_NUM < 183
+#define MAX_PLAYERS             32
+#endif
 
 #pragma semicolon 1
 
 new OrpheuFunction:g_hShouldBypassEntityFunction, OrpheuFunction:g_hPlayerMoveFunction, OrpheuFunction:g_hTestEntityPositionFunction;
 new g_cvarEnabled;
 new g_iOriginalGroupInfo[MAX_PLAYERS+1] = -1;
+
+#if AMXX_VERSION_NUM < 183
+#define MaxClients              get_maxplayers()
+#endif
 
 public plugin_init()
 {
@@ -176,3 +184,10 @@ stock PlayerIdToBit(const iClient)
     //thanks anggaranothing
 	return (1<<( iClient&31));
 }
+
+#if AMXX_VERSION_NUM < 183
+stock get_pcvar_bool(const iHandle)
+{
+	return get_pcvar_num(iHandle) != 0;
+}
+#endif
