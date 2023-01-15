@@ -111,11 +111,11 @@ public Player_PostThink(iClient)
 public OrpheuHookReturn:SC_ShouldBypassEntityPre(hFunc, hPhys)
 {
     new iOther = OrpheuGetParamStructMember(2, "player");
-    if(0 < iOther && iOther < MaxClients)
+    if(0 < iOther && iOther <= MaxClients)
     {
         new OrpheuStruct:hPpMove = OrpheuGetStructFromAddress(OrpheuStructPlayerMove, OrpheuCall(g_hPlayerMoveFunction));
         new iClient = OrpheuGetStructMember(hPpMove, "player_index") + 1;
-        if(0 < iClient && iClient < MaxClients)
+        if(0 < iClient && iClient <= MaxClients)
         {
             new Float:fClientAbsMin[3], Float:fOtherAbsMax[3];
             pev(iClient, pev_absmin, fClientAbsMin);
