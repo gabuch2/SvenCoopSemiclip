@@ -4,60 +4,41 @@
 #include <fakemeta>
 
 #define PLUGIN_NAME             "Sven Co-op Semiclip"
-#define PLUGIN_VERSION          "1.3-dev"
+#define PLUGIN_VERSION          "1.2"
 #define PLUGIN_AUTHOR           "gabuch2"
 
 #define CALLIBRATION            2 //do not change this unless you know what are you doing
 
 #pragma semicolon 1
 
-//functions
 new OrpheuFunction:g_hShouldBypassEntityFunction, OrpheuFunction:g_hPlayerMoveFunction, OrpheuFunction:g_hTestEntityPositionFunction;
-
-//cvars
-new g_cvarEnabled, g_cvarPassthroughSpeed;
-
-//cached cvars
-new Float:g_fPassthroughSpeed;
-
-//misc
+new g_cvarEnabled;
 new g_iOriginalGroupInfo[MAX_PLAYERS+1] = -1;
-new g_iPluginFlags;
 
 public plugin_init()
 {
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
 
     g_cvarEnabled = register_cvar("amx_semiclip_enabled", "1");
-    g_cvarPassthroughSpeed = register_cvar("amx_semiclip_passthrough_speed", "500.0");
     register_cvar("amx_semiclip_version", PLUGIN_VERSION, FCVAR_SERVER);
-
-    g_iPluginFlags = plugin_flags();
 }
 
 public plugin_cfg()
 {
-    if(g_iPluginFlags & AMX_FLAG_DEBUG)
-        server_print("[Sven Co-op Semiclip Debug] Going through plugin_cfg().");
-    g_hShouldBypassEntityFunction = OrpheuGetFunction("SC_ShouldBypassEntity");
-    g_hTestEntityPositionFunction = OrpheuGetFunction("SV_TestEntityPosition");
-    g_hPlayerMoveFunction = OrpheuGetFunction("PM_GetPlayerMove");
-
     if(get_pcvar_bool(g_cvarEnabled))
-        semiclip_enable();
-}
+    {
+        g_hShouldBypassEntityFunction = OrpheuGetFunction("SC_ShouldBypassEntity");
+        g_hTestEntityPositionFunction = OrpheuGetFunction("SV_TestEntityPosition");
+        g_hPlayerMoveFunction = OrpheuGetFunction("PM_GetPlayerMove");
 
-public semiclip_enable()
-{
-    OrpheuRegisterHook(g_hShouldBypassEntityFunction,"SC_ShouldBypassEntityPre");
-    OrpheuRegisterHook(g_hTestEntityPositionFunction,"EntityPositionPre");
-    OrpheuRegisterHook(g_hTestEntityPositionFunction,"EntityPositionPost", OrpheuHookPost);
+        OrpheuRegisterHook(g_hShouldBypassEntityFunction,"SC_ShouldBypassEntityPre");
+        OrpheuRegisterHook(g_hTestEntityPositionFunction,"EntityPositionPre");
+        OrpheuRegisterHook(g_hTestEntityPositionFunction,"EntityPositionPost", OrpheuHookPost);
 
-    register_forward(FM_AddToFullPack, "AddToFullPack_Post", true);
-    register_forward(FM_PlayerPreThink, "Player_PreThink");
-    register_forward(FM_PlayerPostThink, "Player_PostThink");
-
-    g_fPassthroughSpeed = get_pcvar_float(g_cvarPassthroughSpeed);
+        register_forward(FM_AddToFullPack, "AddToFullPack_Post", true);
+        register_forward(FM_PlayerPreThink, "Player_PreThink");
+        register_forward(FM_PlayerPostThink, "Player_PostThink");
+    }
 }
 
 public EntityPositionPre(iOther)
@@ -134,17 +115,13 @@ public OrpheuHookReturn:SC_ShouldBypassEntityPre(hFunc, hPhys)
     {
         new OrpheuStruct:hPpMove = OrpheuGetStructFromAddress(OrpheuStructPlayerMove, OrpheuCall(g_hPlayerMoveFunction));
         new iClient = OrpheuGetStructMember(hPpMove, "player_index") + 1;
-        if(!ArePlayersAllied(iClient, iOther))
-            return OrpheuIgnored;
-
         if(0 < iClient && iClient < MaxClients)
         {
-            new Float:fClientAbsMin[3], Float:fClientVelocity[3], Float:fOtherAbsMax[3];
-            pev(iClient, pev_velocity, fClientVelocity);
+            new Float:fClientAbsMin[3], Float:fOtherAbsMax[3];
             pev(iClient, pev_absmin, fClientAbsMin);
             pev(iOther, pev_absmax, fOtherAbsMax);
             
-            if(fClientAbsMin[2]+CALLIBRATION >= fOtherAbsMax[2] && fClientVelocity[2] < g_fPassthroughSpeed)
+            if(fClientAbsMin[2]+CALLIBRATION >= fOtherAbsMax[2])
                 return OrpheuIgnored;
 
             OrpheuSetReturn(true);
@@ -158,15 +135,11 @@ public AddToFullPack_Post(hEntState, iEnt, iEdictEnt, iEdictHost, iHostFlags, iP
 {	
     if(iPlayer)
     {
-        if(!ArePlayersAllied(iEdictHost, iEdictEnt))
-            return FMRES_IGNORED;
-
-        new Float:fClientAbsMin[3], Float:fClientVelocity[3], Float:fOtherAbsMax[3];
-        pev(iEdictHost, pev_velocity, fClientVelocity);
+        new Float:fClientAbsMin[3], Float:fOtherAbsMax[3];
         pev(iEdictHost, pev_absmin, fClientAbsMin);
         pev(iEdictEnt, pev_absmax, fOtherAbsMax);
 
-        if(fClientAbsMin[2]+CALLIBRATION >= fOtherAbsMax[2] && fClientVelocity[2] < g_fPassthroughSpeed)
+        if(fClientAbsMin[2]+CALLIBRATION >= fOtherAbsMax[2])
             set_es(hEntState, ES_Solid, 1);
         else
             set_es(hEntState, ES_Solid, 0);
@@ -201,10 +174,5 @@ stock IsColliding(iEntity1, iEntity2)
 stock PlayerIdToBit(const iClient)
 {
     //thanks anggaranothing
-	return (1<<(iClient&31));
-}
-
-stock ArePlayersAllied(const iClient1, const iClient2)
-{
-    return ExecuteHam(Ham_Classify, iClient1) == ExecuteHam(Ham_Classify, iClient2);
+	return (1<<( iClient&31));
 }
