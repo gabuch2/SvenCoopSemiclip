@@ -2,7 +2,6 @@
 #include <orpheu>
 #include <orpheu_advanced>
 #include <fakemeta>
-#include <hamsandwich>
 
 #define PLUGIN_NAME             "Sven Co-op Semiclip"
 #define PLUGIN_VERSION          "1.3-dev"
