@@ -31,22 +31,6 @@ AddToFullPack is also implemented, so players will not rubberband when going thr
 * **amx_semiclip_enabled**
   * Enables the plugin. Takes effect on map start. Default 1.
 
-
-### Changelog
-
-* 1.2
-  * Fixes more cases where players can get stuck inside pushables
-  * Players will no longer crush each other while trying to use the same door or going through each other in a lift
-    * Note that there are still cases where players might smash themselves when jumping on each other in elevators, although thanks to the plugin this happens rarely. It's a quirk on the engine that probably will never be able to be fixed
-* 1.1
-  * Fixed the plugin not calling the proper AddToFullPack function (Fixes jittery movement)
-  * Fixed a bug where players can get stuck inside pushables
-* 1.0.1
-  * Removed unneeded include
-* 1.0
-  * Initial Release
-
-
 ### Credits
 
 * [Th3-822](https://github.com/Th3-822)

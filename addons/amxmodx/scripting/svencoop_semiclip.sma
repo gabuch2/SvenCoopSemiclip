@@ -5,10 +5,14 @@
 #include <hamsandwich>
 
 #define PLUGIN_NAME             "Sven Co-op Semiclip"
-#define PLUGIN_VERSION          "1.3-dev"
+#define PLUGIN_VERSION          "1.3-23w05a"
 #define PLUGIN_AUTHOR           "gabuch2"
 
 #define CALLIBRATION            2 //do not change this unless you know what are you doing
+
+#if AMXX_VERSION_NUM < 183
+#define MAX_PLAYERS             32
+#endif
 
 #pragma semicolon 1
 
@@ -24,6 +28,10 @@ new Float:g_fPassthroughSpeed;
 //misc
 new g_iOriginalGroupInfo[MAX_PLAYERS+1] = -1;
 new g_iPluginFlags;
+
+#if AMXX_VERSION_NUM < 183
+#define MaxClients              get_maxplayers()
+#endif
 
 public plugin_init()
 {
@@ -131,14 +139,15 @@ public Player_PostThink(iClient)
 public OrpheuHookReturn:SC_ShouldBypassEntityPre(hFunc, hPhys)
 {
     new iOther = OrpheuGetParamStructMember(2, "player");
-    if(0 < iOther && iOther < MaxClients)
+    if(0 < iOther && iOther <= MaxClients)
     {
         new OrpheuStruct:hPpMove = OrpheuGetStructFromAddress(OrpheuStructPlayerMove, OrpheuCall(g_hPlayerMoveFunction));
         new iClient = OrpheuGetStructMember(hPpMove, "player_index") + 1;
+        
         if(!ArePlayersAllied(iClient, iOther))
             return OrpheuIgnored;
 
-        if(0 < iClient && iClient < MaxClients)
+        if(0 < iClient && iClient <= MaxClients)
         {
             new Float:fClientAbsMin[3], Float:fClientVelocity[3], Float:fOtherAbsMax[3];
             pev(iClient, pev_velocity, fClientVelocity);
@@ -209,3 +218,10 @@ stock ArePlayersAllied(const iClient1, const iClient2)
 {
     return ExecuteHam(Ham_Classify, iClient1) == ExecuteHam(Ham_Classify, iClient2);
 }
+
+#if AMXX_VERSION_NUM < 183
+stock get_pcvar_bool(const iHandle)
+{
+	return get_pcvar_num(iHandle) != 0;
+}
+#endif
