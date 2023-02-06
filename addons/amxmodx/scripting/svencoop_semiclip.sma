@@ -211,11 +211,11 @@ public OrpheuHookReturn:SC_ShouldBypassEntityPre(hPtr, hPhys)
         {
             new iClient = OrpheuGetStructMember(hPpMove, "player_index") + 1;
         
-            if(!ArePlayersAllied(iClient, iOther))
-                return OrpheuIgnored;
-
             if(is_user_valid(iClient) && g_bUserFullyConnected[iClient])
             {
+                if(!ArePlayersAllied(iClient, iOther))
+                    return OrpheuIgnored;
+
                 if(pev(iOther, pev_flags) & FL_DORMANT)
                 {
                     //this provides support for Sven Co-op Nextmapper & Anti-Rush
